@@ -1,0 +1,21 @@
+{
+  "name": "andymdh",
+  "owner": {
+    "name": "Andy Ho",
+    "url": "https://github.com/AndyMDH"
+  },
+  "description": "Andy Ho's Claude Code plugins.",
+  "plugins": [
+    {
+      "name": "study-guide-builder",
+      "source": "./",
+      "description": "Build grounded, easy-to-understand study material for someone learning a technical topic for the first time.",
+      "category": "productivity",
+      "keywords": [
+        "study-guide",
+        "learning",
+        "education"
+      ]
+    }
+  ]
+}

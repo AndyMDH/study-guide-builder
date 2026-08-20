@@ -1,0 +1,22 @@
+{
+  "name": "study-guide-builder",
+  "version": "1.0.0",
+  "description": "Build grounded, easy-to-understand study material for someone learning a technical topic for the first time - Exa/Context7 grounding, Simplified Technical English, glossary-first structure, Mermaid decision trees instead of dense prose.",
+  "author": {
+    "name": "Andy Ho",
+    "url": "https://github.com/AndyMDH"
+  },
+  "homepage": "https://github.com/AndyMDH/study-guide-builder",
+  "repository": "https://github.com/AndyMDH/study-guide-builder",
+  "license": "MIT",
+  "keywords": [
+    "study-guide",
+    "learning",
+    "documentation",
+    "education",
+    "interview-prep"
+  ],
+  "skills": [
+    "./skills/study-guide-builder"
+  ]
+}
