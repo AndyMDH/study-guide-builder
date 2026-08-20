@@ -16,6 +16,8 @@ A request to "build a study guide for X" is almost never fully specified. Ask be
 
 Mid-build, when feedback arrives on a specific example ("this passage is too dense," "fix this section"), don't assume it's scoped to just that example. Ask, or state your assumption plainly, before deciding whether to apply the fix everywhere or just there — this came up repeatedly during the ING build, and asking once up front is cheaper than a second correction round.
 
+**Recalibrate as you learn more, and go back — don't just apply new information going forward.** If the reader reveals their actual background partway through ("I'm decent in Python, basic syntax" — said after content was already written assuming fluency), revisit what's already written for constructs above that level and add a short clarification, rather than only adjusting future writing. The gap is usually small (a decorator, a typing construct) and cheap to fix once you know it's there.
+
 ## Step 1 — Ground every fact before writing it
 
 Never write a fact from memory when it is checkable, especially anything fast-moving: product names, API shapes, current SDK versions, pricing, model names.
@@ -40,8 +42,20 @@ If the `simple-english` skill is installed, load it and apply its pragmatic-mode
 
 1. **A short "why this exists" framing** — what problem this section solves, tied to the reader's actual goal if there is one (a job, an exam, a project).
 2. **A `## Glossary`** near the top, before the main content: every jargon term used in this section, one line each, plain definition. This is the single biggest lever for density — once a term is defined once, the body text can just use it instead of re-explaining it every time it appears. Verify every glossary entry is actually used in the body with `grep` before finishing — no orphaned or invented terms.
-3. **The main content**, written to the rule in Step 4.
-4. **A "what's next" pointer**, if this is one part of a larger series.
+3. **The main content**, written to the rule in Step 4 — and, within each subsection, lead with a concrete example or scenario before the general rule, not after. A reader who sees two near-identical lines of code behave differently remembers the rule that explains why; a reader who meets the abstract rule first and the example second usually doesn't. Reorder any passage that currently states the abstraction first and illustrates it second.
+4. **A "Quick check" self-test prompt at the end of each major subsection** — one question that applies the concept to a new, slightly different scenario than the one just covered, not "summarize this" (answerable by pattern-matching a bolded phrase without understanding it). Give every one of these an answer, collapsed by default so it stays a real self-test:
+   ```
+   > **Quick check:** <question>
+
+   <details>
+   <summary>Answer</summary>
+
+   <2-4 sentences: the answer, then the reasoning, tied only to content already in this section>
+
+   </details>
+   ```
+   A self-test question with no answer is only half a feature — a reader who gets it wrong has no way to find out, or why. This was a direct, explicit request mid-build after the questions themselves were already well received.
+5. **A "what's next" pointer**, if this is one part of a larger series.
 
 If the material is being built toward a specific goal (an interview, a specific job's tech stack, an exam board), add short callout blocks tying a concept back to that goal — a real, answerable question or observation, grounded only in facts already established, never invented. Format as a blockquote with a bold label, e.g. `> **Worth asking:** ...`. Add these where a concept genuinely connects to the goal, not in every section.
 
@@ -64,6 +78,7 @@ This mainly hits internal mechanism/spec detail: file-format internals, obscure 
   Watch for the anti-pattern that caused a rewrite mid-build: a numbered list where each item is a bolded question (`1. **Does X?** ... 2. **If X, does Y?** ...`) reads as sequential steps but is usually one fork with nested sub-checks. If you're numbering questions, it should probably be a flowchart instead.
 - **Any comparison, failure-mode list, or "fact → mitigation" pairing becomes a markdown table**, not a bulleted list of `**Bold fact.** *Mitigation:* ...` pairs. Tables scan faster.
 - Keep prose for things that are genuinely sequential reasoning, not branching — a flowchart with one path per node is just a list with extra syntax.
+- **Keep every Mermaid node label to a handful of words.** Packing a full explanation into one node — multi-line `<br/>` text, `<small>` sub-text — reliably overflows the box in at least some renderers. This caused a real rewrite mid-build, caught only because the reader sent a screenshot showing clipped text. Put a short label in the box; move the actual explanation into a sentence in the surrounding prose, which the section usually needs anyway.
 
 ## Step 6 — Add concrete tool namechecks
 
@@ -82,6 +97,11 @@ Before calling a pass finished:
 - Confirm code-fence counts are even per file (every code block, including every Mermaid block, opens and closes).
 - Confirm every glossary term is actually used in its section's body.
 - If parallel agents did the work, actually read a sample of the output yourself rather than trusting each agent's self-report — self-reports describe what an agent intended to do, not always what it did.
+- **If you generated multiple-choice self-test questions, verify the correct-answer letter distribution is actually even — don't just verify each question's content is right.** A real instance of this: 58 of 66 questions (88%) had the correct answer sitting at position B, an LLM-generation habit invisible from reading questions one at a time, only visible by checking the aggregate:
+  ```bash
+  grep -oE '^\| [0-9]+ \| [A-D] \|' file.md | awk -F'|' '{print $3}' | sort | uniq -c
+  ```
+  Guessing the same letter every time had scored 88% with zero knowledge — that makes the file useless as a self-test. If a real skew turns up, fix it with a small script that shuffles each question's options and rewrites the answer key, not a manual or agent rewrite. A script gives a mechanical, checkable guarantee a rewrite doesn't: diff the *set* of option texts per question before and after — it must be identical, only order may change — and confirm via an automated pass, not a spot-check, that every question's answer-key letter still points at the option that was originally correct.
 
 ## What NOT to do
 
