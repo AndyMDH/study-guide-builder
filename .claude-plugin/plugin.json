@@ -1,6 +1,6 @@
 {
   "name": "study-guide-builder",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Build grounded, easy-to-understand study material for someone learning a technical topic for the first time - Exa/Context7 grounding, Simplified Technical English, glossary-first structure, Mermaid decision trees instead of dense prose.",
   "author": {
     "name": "Andy Ho",
@@ -18,5 +18,6 @@
   ],
   "skills": [
     "./skills/study-guide-builder"
-  ]
+  ],
+  "commands": "./commands"
 }

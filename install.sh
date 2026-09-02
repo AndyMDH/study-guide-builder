@@ -7,6 +7,7 @@
 #
 # Usage:
 #   ./install.sh                 # symlink into ~/.claude/skills/study-guide-builder (global)
+#                                # and the /study-guide command into ~/.claude/commands
 #   ./install.sh --project       # symlink into ./.claude/skills/study-guide-builder (current project only)
 #   ./install.sh --copy          # copy instead of symlink (won't track future `git pull` updates)
 #   ./install.sh --project --copy
@@ -39,13 +40,26 @@ if [ -e "$DEST" ] || [ -L "$DEST" ]; then
   exit 1
 fi
 
+CMD_SRC="$REPO_DIR/commands/study-guide.md"
+CMD_ROOT="$(dirname "$TARGET_ROOT")/commands"
+CMD_DEST="$CMD_ROOT/study-guide.md"
+mkdir -p "$CMD_ROOT"
+
 if [ "$MODE" = "symlink" ]; then
   ln -s "$SRC" "$DEST"
   echo "Symlinked $DEST -> $SRC"
+  if [ ! -e "$CMD_DEST" ] && [ ! -L "$CMD_DEST" ]; then
+    ln -s "$CMD_SRC" "$CMD_DEST"
+    echo "Symlinked $CMD_DEST -> $CMD_SRC  (/study-guide command)"
+  fi
   echo "Future 'git pull' in $REPO_DIR will update the installed skill automatically."
 else
   cp -R "$SRC" "$DEST"
   echo "Copied $SRC -> $DEST"
+  if [ ! -e "$CMD_DEST" ]; then
+    cp "$CMD_SRC" "$CMD_DEST"
+    echo "Copied $CMD_SRC -> $CMD_DEST  (/study-guide command)"
+  fi
   echo "This copy will NOT update on 'git pull' -- rerun install.sh --copy to refresh it."
 fi
 

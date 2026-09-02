@@ -2,7 +2,7 @@
 
 A Claude Code skill that builds study material for a technical topic you are learning for the first time. It works for a study repo, a learning guide, or notes for an interview or exam.
 
-It is an agent skill, not a program. Claude Code reads the instructions and follows them. There is nothing to run.
+It is an agent skill, not a program. Claude Code reads the instructions and follows them.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-C2410C)](LICENSE)
 
@@ -26,9 +26,9 @@ Fixing these on a real study repo took about a dozen rounds of corrections. This
 
 **While it writes:**
 
-- Checks every fact with [Exa](https://exa.ai) and [Context7](https://context7.com). It never writes a version, price, or product name from memory.
+- Checks every fact with [Exa](https://exa.ai) and [Context7](https://context7.com). It never writes a version, price, or product name from memory. Facts that age get a source link.
 - Uses short sentences and active voice.
-- Gives every file the same shape: why it exists, a glossary, the content, a self-test, and what comes next.
+- Gives every file the same shape: why it exists, a glossary, the content, a self-test, a teach-back prompt, and what comes next.
 - Opens each section with a real example before the rule.
 - Draws decision trees as Mermaid flowcharts. Puts comparisons in tables.
 - Cuts anything that does not change a decision.
@@ -36,9 +36,12 @@ Fixing these on a real study repo took about a dozen rounds of corrections. This
 
 **After it writes:**
 
-- Checks that every glossary term is used.
-- Checks that code fences and details blocks are closed.
-- Checks that multiple-choice answers are spread evenly across A, B, C, and D.
+- Runs `scripts/check.py` on the guide. The script fails on unclosed code blocks, broken answer blocks, glossary terms that are never used, and multiple-choice answers that lean on one letter.
+
+**After you read:**
+
+- Each file ends with a teach-back prompt. Explain the idea to Claude in your own words. It tells you what you got right, what you missed, and asks one follow-up question.
+- Ask for a refresh later. The skill rechecks every dated fact in the guide, shows you a table of what changed, and edits only what you approve.
 
 The full rules are in [`SKILL.md`](skills/study-guide-builder/SKILL.md). The stories behind each rule are in [`references/lessons.md`](skills/study-guide-builder/references/lessons.md). Rules for material that follows a slide deck are in [`references/slide-decks.md`](skills/study-guide-builder/references/slide-decks.md).
 
@@ -59,15 +62,29 @@ cd study-guide-builder
 ./install.sh
 ```
 
-The script links the skill into `~/.claude/skills`. Add `--project` to install into the current project only. Add `--copy` to copy the files instead of a link.
+The script links the skill into `~/.claude/skills` and the command into `~/.claude/commands`. Add `--project` to install into the current project only. Add `--copy` to copy the files instead of a link.
 
 ## Use
 
-Ask Claude Code in plain words:
+With the command:
+
+```
+/study-guide Kubernetes networking
+/study-guide refresh ~/study/kubernetes
+```
+
+Or in plain words:
 
 - "Build me a study guide for X."
 - "I have an interview about Y next week. Help me learn it."
 - "Explain Z so I actually understand it."
+- "Here is my explanation of file 3. Grade it."
+
+To check a guide by hand:
+
+```bash
+python3 skills/study-guide-builder/scripts/check.py path/to/guide
+```
 
 ## Optional
 
