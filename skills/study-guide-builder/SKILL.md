@@ -1,111 +1,176 @@
 ---
 name: study-guide-builder
-description: Build grounded, easy-to-understand study material (a study repo, a learning guide, a tutorial, explainer notes) for someone learning a technical topic for the first time. Grounds facts via Exa and Context7, writes in plain short sentences, and applies the density/clarity fixes from the ING document-extraction study repo build. Use when asked to create a study guide, learning material, a tutorial, prep notes for an interview/exam, or to "teach me" / "explain X so I actually understand it" for a technical topic.
+description: Build grounded, easy-to-understand study material (a study repo, a learning guide, a tutorial, explainer notes) for someone learning a technical topic for the first time. Grounds facts via Exa and Context7, writes in plain short sentences, and applies density/clarity fixes learned on real study-repo builds. Use when asked to create a study guide, learning material, a tutorial, prep notes for an interview/exam, or to "teach me" / "explain X so I actually understand it" for a technical topic.
 ---
 
-Build study material that a first-time learner can actually read in one pass, not a reference dump they have to fight through. This skill exists because getting there took several corrective rounds on a real repo (`~/Project/study/ing_document_extraction`) — apply all of those fixes from the start instead of relearning them.
+Build study material that a first-time learner can read in one pass, not a reference dump. Every rule below came from a corrective round on a real build. The stories behind the rules are in `references/lessons.md` — read it when a rule seems optional or unclear. If the material pairs with a slide deck, also read `references/slide-decks.md`.
 
-## Step 0 — Ask before you build, not after
+Terminology in this skill: a **file** is one markdown file in the study repo. A **§section** is a numbered heading inside one file. Never write a bare "Section 3" in the material — name the target file, or use `§3` for the current file.
 
-A request to "build a study guide for X" is almost never fully specified. Ask before starting work whenever any of these are unclear, rather than guessing and redoing:
+## Step 0 — Grill before you build
 
-- **Where it lives and how big.** One file, or a multi-file repo like the ING one? A specific folder/repo name, or pick a sensible default and confirm it?
-- **Depth and audience.** First-time-learner depth (assume no prior exposure, explain from scratch) or a denser refresher for someone who already knows the basics? This changes almost every later decision — don't assume.
-- **A specific goal, if any.** Is this for a job interview, an exam, a project, or general learning? A named goal is what makes the "worth asking/raising" callouts in Step 3 possible — without one, skip that part rather than inventing a fake audience.
-- **Grounding tool access.** If Exa isn't obviously available (see Step 1), don't silently fall back to WebSearch — say so and ask, or confirm the fallback is fine, before spending a research pass on it.
+A request to "build a study guide for X" is never fully specified. Do not start writing from the request alone. Run an intake in rounds of clickable questions (the AskUserQuestion tool). Give every question a recommended option, marked "(Recommended)" and listed first. After each round, ask whatever the answers unblocked. Stop when nothing that shapes the guide is unsettled.
 
-Mid-build, when feedback arrives on a specific example ("this passage is too dense," "fix this section"), don't assume it's scoped to just that example. Ask, or state your assumption plainly, before deciding whether to apply the fix everywhere or just there — this came up repeatedly during the ING build, and asking once up front is cheaper than a second correction round.
+**Round 1 — scope.** Ask in one round:
 
-**Recalibrate as you learn more, and go back — don't just apply new information going forward.** If the reader reveals their actual background partway through ("I'm decent in Python, basic syntax" — said after content was already written assuming fluency), revisit what's already written for constructs above that level and add a short clarification, rather than only adjusting future writing. The gap is usually small (a decorator, a typing construct) and cheap to fix once you know it's there.
+- **Where it lives and how big.** One file, or a multi-file repo? Which folder or repo name? For a repo, settle GitHub and visibility now (see Step 8).
+- **Depth, self-reported.** First-time learner, or a denser refresher? This is a claim, not a fact — round 2 tests it.
+- **Adjacent domain.** What does the reader already know? This unlocks the bridge file (Step 3).
+- **Goal.** Interview, exam, project, or general learning? With no goal, skip the goal callouts in Step 4 and the goal round below.
+- **Time budget.** Three days and three weeks produce different guides. Scope file count and depth to the answer.
+- **Grounding access.** If Exa is not available (Step 1), ask before you fall back to WebSearch.
 
-## Step 1 — Ground every fact before writing it
+**Round 2 — calibration quiz.** Ask 3 to 5 multiple-choice questions on the topic, pitched at the depth the reader claimed. Ground the quiz facts first (Step 1) — a calibration quiz with a wrong answer key miscalibrates everything after it. Their answers, not the self-report, set the starting level: a wrong answer marks something the guide must teach from scratch; a confident right answer marks something to compress or skip. This exists because self-reports arrive vague and late (see `references/lessons.md`).
 
-Never write a fact from memory when it is checkable, especially anything fast-moving: product names, API shapes, current SDK versions, pricing, model names.
+**Round 3 — goal interrogation** (only with a named goal). Work backwards from the event: What will you be asked? What must you be able to do on day one? What does failure look like? The answers become the targets for the "Worth asking" callouts and the self-tests.
 
-- **Exa**, if available, is the preferred source. Check thoroughly before concluding it is not available: `EXA_API_KEY` in the environment, in a project `.env` file, and in macOS Keychain (`security find-generic-password -s EXA_API_KEY`). If a key exists, call Exa directly over its REST API with `curl` — no SDK install needed:
+Mid-build feedback on one example ("this passage is too dense") usually means "fix this pattern everywhere." Ask, or state your scope assumption, before you apply the fix.
+
+When the reader reveals their real background partway through despite the quiz, go back and patch what is already written. Do not only adjust future writing. The gap is usually small and cheap to fix.
+
+## Step 1 — Ground every fact
+
+Never write a checkable fact from memory. This holds hardest for fast-moving facts: product names, API shapes, SDK versions, pricing, model names.
+
+- **Exa** is the preferred search tool. Check for a key before you conclude that it is absent: the `EXA_API_KEY` environment variable, a project `.env` file, and macOS Keychain. Extract from Keychain with:
+  ```bash
+  export EXA_API_KEY="$(security find-generic-password -s EXA_API_KEY -w)"
+  ```
+  Then call the REST API directly — no SDK install needed:
   ```bash
   curl -s -X POST 'https://api.exa.ai/search' -H "x-api-key: $EXA_API_KEY" -H 'Content-Type: application/json' \
     -d '{"query":"...","numResults":3,"type":"auto"}'
   ```
-  `/contents` with a `urls` array fetches full page text for a specific result.
-- If no Exa key is available anywhere, ask the user before silently substituting `WebSearch` — don't just decide and proceed. Burning a research pass on the wrong tool is expensive to redo.
-- **Context7** (`resolve-library-id` then `query-docs`) is for library/API-specific documentation — the exact current shape of a function call, a config field, an import path. Prefer it over general web search for anything library-specific.
-- If the topic involves a company or product that renames/repositions itself often (this happened mid-build: "Vertex AI" → "Gemini Enterprise Agent Platform"), do a live check even if you're fairly confident — it is cheap insurance against sounding out of date.
+  `/contents` with a `urls` array fetches full page text for a result.
+- If no key exists anywhere, ask before you substitute WebSearch.
+- **Context7** (`resolve-library-id`, then `query-docs`) covers library-specific facts: exact call shapes, config fields, import paths. Prefer it over web search for those.
+- Live-check any company or product that renames itself often, even when you feel confident.
+- **Cite load-bearing facts inline.** A version, price, product name, or date gets a markdown link to its source at the point of use. Ordinary explanatory prose stays link-free.
 
-## Step 2 — Write in plain, short sentences
+## Step 2 — Plain, short sentences
 
-If the `simple-english` skill is installed, load it and apply its pragmatic-mode rules throughout. If it isn't installed, apply the same core rules directly: ~25-word sentence limit for descriptive text, active voice, no semicolons, no banned modals (`should`/`would`/`could`/`might` → `can`/`must` or restructure), conditions before commands, no contractions. Domain vocabulary stays (`PDF`, `checkpoint`, `Pydantic`) — this is not about dumbing down content, it's about not making sentences do three jobs at once.
+If the `simple-english` skill is installed, load it and apply pragmatic mode throughout. If not, apply its core rules directly: ~25-word sentence limit for descriptive text, active voice, no semicolons, no `should`/`would`/`could`/`might`, conditions before commands, no contractions. Domain vocabulary stays — this is about sentence load, not dumbing down.
 
-**Do the self-check for real.** After a first pass, re-read the whole document again looking specifically for: sentences over the limit, contractions, `has been`/`have been`, and — the thing that got missed repeatedly on the first attempt — long compound sentences that survived because they were "already kind of short."
+After the first pass, re-read the whole document once more. Hunt for: over-limit sentences, contractions, `has been`/`have been`, and long compound sentences that felt "already kind of short."
 
-## Step 3 — Structure every section the same way
+## Step 3 — Bridge file (file `00`)
 
-1. **A short "why this exists" framing** — what problem this section solves, tied to the reader's actual goal if there is one (a job, an exam, a project).
-2. **A `## Glossary`** near the top, before the main content: every jargon term used in this section, one line each, plain definition. This is the single biggest lever for density — once a term is defined once, the body text can just use it instead of re-explaining it every time it appears. Verify every glossary entry is actually used in the body with `grep` before finishing — no orphaned or invented terms.
-3. **The main content**, written to the rule in Step 4 — and, within each subsection, lead with a concrete example or scenario before the general rule, not after. A reader who sees two near-identical lines of code behave differently remembers the rule that explains why; a reader who meets the abstract rule first and the example second usually doesn't. Reorder any passage that currently states the abstraction first and illustrates it second.
-4. **A "Quick check" self-test prompt at the end of each major subsection** — one question that applies the concept to a new, slightly different scenario than the one just covered, not "summarize this" (answerable by pattern-matching a bolded phrase without understanding it). Give every one of these an answer, collapsed by default so it stays a real self-test:
+If the topic is new to the reader but they know an adjacent domain, write a bridge file first, numbered `00`. Do not teach a domain from first principles when the reader owns the same machine under different names.
+
+Four parts, in this order:
+
+1. **The claim, stated plainly.** "These are the same mechanism." Then one worked example told twice — once in the familiar domain, once in the new one, same shape and numbers.
+2. **The translation table.** Familiar term, new term, and a third column that names the shared idea. The third column stops it becoming rote vocabulary.
+3. **Where the analogy breaks.** Non-negotiable, and usually the most valuable part. Name the differences, and say which one causes the real difficulty.
+4. **The short retention list.** About nine terms, not forty. Name the three that carry most of the conversation.
+
+Ground the familiar side too — check it like any other fact.
+
+## Step 4 — One template for every file
+
+1. **A short "why this exists" framing** — what problem the file solves, tied to the reader's goal when there is one.
+2. **A `## Glossary`** before the main content: every jargon term used in the file, one plain line each. This is the biggest density lever — define once, then use. (Usage is verified in Step 9.)
+   A glossary row is not an explanation. Explain each term in the body where it first matters: the definition, the thing it replaces, and the consequence for this project. A file that states conclusions without laying that ground reads as ammunition, not learning material.
+3. **The main content**, written to the Step 5 cut rule. Lead each §section with a concrete example, then the general rule. Reorder any passage that does it the other way.
+   For any multi-step process, show a worked trace with the output of every step — the actual input, what each step produces, what comes back. A numbered list of step names teaches nothing on its own.
+4. **A "Quick check" at the end of each major §section** — one question that applies the concept to a new scenario, never "summarize this". Use the same collapsed-answer markup as every other Q&A aid (Step 8):
    ```
    > **Quick check:** <question>
 
    <details>
    <summary>Answer</summary>
 
-   <2-4 sentences: the answer, then the reasoning, tied only to content already in this section>
+   <the answer, then the reasoning — 1 to 4 sentences, tied only to content already in this file>
 
    </details>
    ```
-   A self-test question with no answer is only half a feature — a reader who gets it wrong has no way to find out, or why. This was a direct, explicit request mid-build after the questions themselves were already well received.
-5. **A "what's next" pointer**, if this is one part of a larger series.
+5. **A "what's next" pointer**, if the file is part of a series.
 
-If the material is being built toward a specific goal (an interview, a specific job's tech stack, an exam board), add short callout blocks tying a concept back to that goal — a real, answerable question or observation, grounded only in facts already established, never invented. Format as a blockquote with a bold label, e.g. `> **Worth asking:** ...`. Add these where a concept genuinely connects to the goal, not in every section.
+With a named goal, add sparse callouts: `> **Worth asking:** ...` — a real, answerable question grounded only in established facts. Add one only where a concept genuinely connects to the goal, not in every file.
 
-## Step 4 — Cut anything that doesn't change a decision
+## Step 5 — Cut what changes no decision
 
-This was the fix requested most often, and the one most likely to be under-applied on a first pass. The test: **if the reader can use the tool/concept correctly without knowing this fact, and knowing it would not change what they'd build, ask, or decide — cut it, or compress it to one clause.**
+The test: can the reader use the concept correctly without this fact? Would knowing it change what they build, ask, or decide? If no to both, cut it or compress it to one clause.
 
-This mainly hits internal mechanism/spec detail: file-format internals, obscure API parameters nobody calls directly, statistical derivations, SDK version history, byte-level protocol detail. It does NOT mean cutting real content — keep failure modes, tradeoffs, worked numeric examples, code the reader will actually write, and the reasoning behind a design choice. A worked example with real numbers (e.g. a precision/recall calculation with an actual TP/FP/FN/TN breakdown) is exactly the kind of depth to keep; a page of formula derivation around it is exactly the kind of depth to cut.
+This mainly hits mechanism trivia: file-format internals, obscure parameters nobody calls, statistical derivations, version history, byte-level detail. Keep failure modes, tradeoffs, worked numeric examples, code the reader will write, and the reasoning behind design choices.
 
-**Do not re-derive reasoning already given.** A closing "pulling it together" or summary section should state conclusions in one clause each, not re-argue them — the reasoning already happened earlier in the document. If you catch yourself writing a bullet with 2+ sentences restating an argument from three paragraphs up, cut it to the conclusion alone.
+Do not re-derive reasoning in summaries. A closing section states each conclusion in one clause — the argument already happened earlier.
 
-## Step 5 — Visuals: real diagrams and tables, not ASCII art or dense bullets
+## Step 6 — Real diagrams and tables
 
-- **Any branching/decision logic becomes a Mermaid flowchart**, not a numbered list of prose questions and not hand-aligned ASCII arrows in a code block. GitHub (and most modern markdown viewers) render ```mermaid fences natively as real boxes and arrows.
-  ```mermaid
-  flowchart TD
-      A["Does X hold?"] -->|Yes| B["Do Y"]
-      A -->|No| C["Do Z instead"]
+- Branching or decision logic becomes a Mermaid flowchart — never ASCII arrows, never a numbered list of bolded questions. If you are numbering questions, it is probably a flowchart.
+- A comparison, failure-mode list, or fact-and-mitigation pairing becomes a markdown table.
+- Genuinely sequential reasoning stays prose. A flowchart with one path per node is a list with extra syntax.
+- Keep every Mermaid node label to a handful of words. The explanation goes in the surrounding prose, not in `<br/>`-packed node text — long labels clip in real renderers.
+
+## Step 7 — Concrete tool namechecks
+
+Where a concept maps to a real tool, name it: not "a layout-aware parsing tool exists" but "a tool like **Docling** handles this." Named tools are the difference between a concept and something actionable.
+
+## Step 8 — Multi-file repos
+
+- **Settle location, GitHub, and visibility at Step 0.** Check `gh repo list` and match the user's existing pattern — loose local files are not finished when every sibling repo lives on GitHub. Study material often names real people and the reader's weaknesses: fine in a private repo, not fine in a public one. Ask before you push.
+- Number files by learning order. Cross-file references name the topic ("the Pydantic file"), never a bare number. `§N` refers only to the current file's own sections.
+- Build a master glossary grouped by topic, not 1:1 by file — merge files that are one continuous concern.
+- Derived aids (cheat sheet, flashcards, practice questions, refreshers) regenerate together with the source content, every pass. They drift silently otherwise.
+- **Every Q&A aid hides its answer in a collapsed `<details>` block** — flashcards, practice questions, multiple-choice tests, and quick checks. No visible answer-key tables anywhere: an answer the eye can reach before the guess defeats retrieval.
+
   ```
-  Watch for the anti-pattern that caused a rewrite mid-build: a numbered list where each item is a bolded question (`1. **Does X?** ... 2. **If X, does Y?** ...`) reads as sequential steps but is usually one fork with nested sub-checks. If you're numbering questions, it should probably be a flowchart instead.
-- **Any comparison, failure-mode list, or "fact → mitigation" pairing becomes a markdown table**, not a bulleted list of `**Bold fact.** *Mitigation:* ...` pairs. Tables scan faster.
-- Keep prose for things that are genuinely sequential reasoning, not branching — a flowchart with one path per node is just a list with extra syntax.
-- **Keep every Mermaid node label to a handful of words.** Packing a full explanation into one node — multi-line `<br/>` text, `<small>` sub-text — reliably overflows the box in at least some renderers. This caused a real rewrite mid-build, caught only because the reader sent a screenshot showing clipped text. Put a short label in the box; move the actual explanation into a sentence in the surrounding prose, which the section usually needs anyway.
+  **Q: <question>**
 
-## Step 6 — Add concrete tool namechecks
+  <details>
+  <summary>Answer</summary>
 
-Wherever a concept maps to a real, specific tool someone would actually reach for, name it — not "a layout-aware parsing tool exists" but "a tool like **Docling** handles this." This came up as an explicit, separate request mid-build: it's the difference between teaching a concept and teaching something actionable.
+  <the answer, then the reasoning — 1 to 4 sentences>
 
-## Step 7 — If this is a multi-file study repo
+  </details>
+  ```
 
-- Number files by learning order, and cross-reference between them by **naming the topic**, not a bare number, if any file also has its own internal numbered subsections (`## 1.`, `## 2.`...) — a bare "Section 3" is ambiguous between "the repo's third file" and "this file's own third subsection." Use `§N` for a file's own internal subsections, and name the target topic ("the Pydantic section") for cross-file references.
-- Build a master glossary file aggregating every section's glossary, **grouped by topic, not by mirroring the file list 1:1** — merge sections that are really one continuous concern (e.g. "document format" and "getting text out of a document" are one topic told in two files, not two separate topics).
-- If you generate derived study aids (a cheat sheet, flashcards, practice questions, a topic-summary refresher), **regenerate them together with the main content, every time it changes.** They drift silently otherwise — this happened mid-build: four derived files sat untouched through six rounds of edits to the source files and ended up contradicting them (testing removed facts, using cut terminology). Sync them in the same pass, not as an afterthought.
+  For a multiple-choice question, the first line inside the block is `**Answer: <letter>**`, then the reasoning.
 
-## Step 8 — Verify, don't just report done
+  Three mechanics: keep a blank line after `<summary>` and before `</details>` (GitHub renders literal HTML otherwise); never ship `<details open>`; one question per `<details>` block.
 
-Before calling a pass finished:
-- `grep` for corruption markers (`^<<<<<<<`, `^=======$`, `^>>>>>>>`) if multiple parallel edits touched the same files.
-- Confirm code-fence counts are even per file (every code block, including every Mermaid block, opens and closes).
-- Confirm every glossary term is actually used in its section's body.
-- If parallel agents did the work, actually read a sample of the output yourself rather than trusting each agent's self-report — self-reports describe what an agent intended to do, not always what it did.
-- **If you generated multiple-choice self-test questions, verify the correct-answer letter distribution is actually even — don't just verify each question's content is right.** A real instance of this: 58 of 66 questions (88%) had the correct answer sitting at position B, an LLM-generation habit invisible from reading questions one at a time, only visible by checking the aggregate:
+  Check mechanically before finishing:
   ```bash
-  grep -oE '^\| [0-9]+ \| [A-D] \|' file.md | awk -F'|' '{print $3}' | sort | uniq -c
+  grep -c '<details>' cards.md && grep -c '</details>' cards.md   # counts must match
+  grep -n '<details open' cards.md && echo 'FAIL: pre-opened answer'
   ```
-  Guessing the same letter every time had scored 88% with zero knowledge — that makes the file useless as a self-test. If a real skew turns up, fix it with a small script that shuffles each question's options and rewrites the answer key, not a manual or agent rewrite. A script gives a mechanical, checkable guarantee a rewrite doesn't: diff the *set* of option texts per question before and after — it must be identical, only order may change — and confirm via an automated pass, not a spot-check, that every question's answer-key letter still points at the option that was originally correct.
+
+## Step 9 — Verify, do not just report done
+
+- If parallel edits touched the same files, grep for corruption markers (`^<<<<<<<`, `^=======$`, `^>>>>>>>`).
+- Code-fence count per file must be even: `` grep -cE '^[[:space:]]*```' file.md ``. The pattern must allow indentation, or fences inside list items go uncounted. Every block, including Mermaid, opens and closes.
+- Every glossary term must appear in its file's body — check with grep, no orphaned or invented terms.
+- After inserting a new section (a primer, a bridge) ahead of existing content, re-check reading order: the new section must not reference an example that only appears later.
+- If parallel agents did the work, read a sample of the output yourself. Self-reports describe intent, not results.
+- **Check that the file renders as written.** Markdown joins consecutive non-blank lines into one paragraph, so stacked `**Label:** value` lines become a run-on paragraph on GitHub. Two rules: a block of label-and-value facts is a two-column table, never stacked lines; a bold label above a list or table needs a blank line. Lint mechanically:
+  ```bash
+  python3 - <<'EOF'
+  import glob
+  for f in glob.glob('*.md')+glob.glob('*/*.md'):
+      L=open(f).read().split('\n'); fence=False; run=[]
+      def flush():
+          if len(run)>1: print(f"{f}:{run[0]} -- {len(run)} lines merge into one paragraph")
+      for i,l in enumerate(L,1):
+          s=l.strip()
+          if s.startswith('```'): fence=not fence; flush(); run.clear(); continue
+          if fence: continue
+          if not s or s[0] in '|#>-<[' or s.startswith('* ') or s[:2].rstrip('.').isdigit() or l.endswith('  '):
+              flush(); run.clear(); continue
+          run.append(i)
+      flush()
+  EOF
+  ```
+  List items and deliberate soft-wrapped prose are false positives. The targets are stacked facts and stacked labels.
+- **Check the multiple-choice answer-letter distribution, not just each question's content.** Count the letters inside the `<details>` blocks:
+  ```bash
+  grep -oE '\*\*Answer: [A-D]\*\*' file.md | sort | uniq -c
+  ```
+  Zero matches means the format drifted — fix the file or the pattern; never accept an empty result as a pass. If the distribution skews, fix it with a script that shuffles each question's options and rewrites the answer lines. Then verify mechanically: the set of option texts per question is unchanged, and every answer letter still points at the originally correct option.
 
 ## What NOT to do
 
-- Don't cut code blocks, worked examples with real numbers, or the reasoning behind a design decision — only mechanism trivia and restated argument.
-- Don't invent facts to fill a glossary or a callout — every entry must trace back to something actually in the content.
-- Don't silently swap a preferred tool (Exa) for a fallback (WebSearch) without telling the user first.
-- Don't treat "I fixed the one example you pointed out" as done — the user will usually mean "fix this pattern everywhere," and saying so explicitly the first time saves a round trip.
+- Do not cut code blocks, worked examples with real numbers, or the reasoning behind a design decision — only mechanism trivia and restated argument.
+- Do not invent facts to fill a glossary or a callout — every entry must trace to something in the content.
+- Do not silently swap Exa for WebSearch — tell the user first.
+- Do not treat "I fixed the one example you pointed out" as done — say explicitly whether you fixed the pattern everywhere.

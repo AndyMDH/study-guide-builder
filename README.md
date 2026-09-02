@@ -46,7 +46,9 @@ them one complaint at a time.
 - **Grounds facts** via [Exa](https://exa.ai) (checked thoroughly before
   falling back to `WebSearch`, and asks first) and
   [Context7](https://context7.com) for library-specific API detail — never
-  writes a checkable fact from memory.
+  writes a checkable fact from memory. Load-bearing facts (versions,
+  prices, product names, dates) get an inline source link at the point of
+  use.
 - **Writes in plain, short sentences** — Simplified Technical English rules,
   loading the `simple-english` skill if
   it's installed, or applying the same rules directly if not.
@@ -60,19 +62,35 @@ them one complaint at a time.
   failure-mode lists become tables, not dense bullets. Node text stays short
   so it doesn't overflow its box.
 - **Leads with examples.** Each subsection opens with a concrete case before
-  the general rule, and closes with a self-test question that has a real,
-  collapsed answer — not a bare question with no way to check yourself.
+  the general rule, shows a worked trace with the output of every step, and
+  closes with a self-test question that has a real, collapsed answer — not a
+  bare question with no way to check yourself. Every Q&A aid, multiple-choice
+  included, uses the same `<details>` markup.
 - **Names real tools**, not "a tool exists for this."
-- **Asks before building** when scope, depth, or a specific goal (an
-  interview, an exam) is unclear, instead of guessing — and recalibrates
-  already-written content if it learns the reader's real background partway
-  through.
-- **Verifies its own multiple-choice questions**, not just their content —
-  checking that correct answers are evenly distributed across A/B/C/D, since
-  that kind of bias is invisible reading one question at a time.
+- **Grills before building.** Runs an intake in rounds of clickable
+  questions, each with a recommended answer: scope and time budget first,
+  then a short grounded calibration quiz of the reader (their answers, not
+  their self-report, set the depth), then goal interrogation when there is
+  an interview or exam to prepare for. Recalibrates already-written content
+  if it learns the reader's real background partway through.
+- **Writes a bridge file first** when the reader knows an adjacent domain:
+  the claim that the two are the same mechanism, a translation table, where
+  the analogy breaks, and a short retention list.
+- **Verifies its own output**, not just reports done — even code fences,
+  no orphaned glossary terms, reading order after inserts, stacked lines
+  that would merge into one paragraph on GitHub, and an even spread of
+  correct answers across A/B/C/D in multiple-choice self-tests, since that
+  kind of bias is invisible reading one question at a time.
 
 See [`skills/study-guide-builder/SKILL.md`](skills/study-guide-builder/SKILL.md)
-for the full instructions the agent follows.
+for the full instructions the agent follows. Two reference files sit next
+to it:
+
+- [`references/lessons.md`](skills/study-guide-builder/references/lessons.md)
+  — the story behind each rule: the real failure on a study-repo build that
+  the rule prevents. Read it when a rule seems optional.
+- [`references/slide-decks.md`](skills/study-guide-builder/references/slide-decks.md)
+  — extra rules for material that shadows an existing course deck.
 
 ## Install
 
