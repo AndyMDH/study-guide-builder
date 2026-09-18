@@ -26,6 +26,10 @@ Each rule in `SKILL.md` came from a corrective round on a real study-repo build.
 
 **Example before rule.** A reader who sees two near-identical lines of code behave differently remembers the rule that explains why. A reader who meets the abstract rule first usually does not.
 
+**Reference tables in the reading path.** A framework-basics file was built as a grounded reference: a table of agent classes with doc links, a table of CLI commands, a table of state prefixes, rename dates, metric names. The checker passed. The reader said: "this is all complicated, remember how difficult I had it for the last prep? That's my level." What landed instead was one everyday picture (three workers, one whiteboard, a manager) and plain Python before every framework construct. The fix was a split: a short teaching file that opens every section with the plain version, and a `reference_*.md` that holds the tables and the links. Hence the reference-file rule in Step 4 and the citation rule in Step 1.
+
+**Unexplained syntax.** The same reader stalled on `list[RoomMatch]`, `Enum`, `yield`, and `async`, none of which the file explained, because the author read them as obvious. Each needed one line and a picture: a dropdown, several forms in a row, "hand back one thing and continue", "copy it". Ask the reader's Python level in Step 0 and explain every construct above that level where it first appears.
+
 ## Step 5 — Cut what changes no decision
 
 This was the fix requested most often, and the one most under-applied on first passes. A worked precision/recall calculation with a real TP/FP/FN/TN breakdown is depth to keep. A page of formula derivation around it is depth to cut.

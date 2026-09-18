@@ -40,7 +40,7 @@ Never write a checkable fact from memory. This holds hardest for product names, 
   `/contents` with a `urls` array fetches full page text. If no key exists anywhere, tell the user and ask before you substitute WebSearch.
 - **Context7** (`resolve-library-id`, then `query-docs`) covers library-specific facts: call shapes, config fields, import paths. Prefer it over web search for those.
 - Live-check any company or product that renames itself often, even when you feel confident.
-- **Cite load-bearing facts inline.** A version, price, product name, or date gets a markdown link to its source at the point of use. Explanatory prose stays link-free. Refresh mode depends on these links.
+- **Cite load-bearing facts, but not in the reading path.** A version, price, product name, or date gets a markdown link to its source. Put the link in the guide's `reference_*.md` file (Step 4), or in a short "Sources" list at the end of the file. A sentence in a teaching section carries no link. Refresh mode greps the whole guide folder, so the links still work.
 
 ## Step 2 — Plain, short sentences
 
@@ -64,10 +64,12 @@ Ground the familiar side too.
 1. **A short "why this exists" framing** — what problem the file solves, tied to the reader's goal when there is one.
 2. **A `## Glossary`** before the main content: every jargon term used in the file, one plain line each. Define once, then use. Never invent an entry to fill space — every term must appear in the body (checked in Step 8).
    A glossary row is not an explanation. Explain each term in the body where it first matters: the definition, the thing it replaces, and the consequence for this project. A file that states conclusions without laying that ground reads as ammunition, not learning material.
-3. **The main content**, written to the Step 5 cut rule. Lead each §section with a concrete example, then the general rule. For any multi-step process, show a worked trace with the output of every step — the actual input, what each step produces, what comes back. A list of step names teaches nothing.
+3. **The main content**, written to the Step 5 cut rule. Lead each §section with a concrete example, then the general rule. For a framework or library, show the plain-language or plain-Python version of the idea first, then the framework's version, and match them line by line. Explain a syntax the reader has not met (`Enum`, `list[X]`, `yield`, `async`) in one or two lines with an everyday picture, then move on. For any multi-step process, show a worked trace with the output of every step — the actual input, what each step produces, what comes back. A list of step names teaches nothing.
 4. **A "Quick check" at the end of each major §section** — one question that applies the concept to a new scenario, never "summarize this".
 5. **A "Teach it back" prompt at the end of the file** — one line: `> **Teach it back:** Explain <the file's core idea> in two or three sentences, in your own words, to Claude.` One per file, on the idea the file exists to teach.
 6. **A "what's next" pointer**, if the file is part of a series.
+
+**Reference material leaves the reading path.** Version numbers, region lists, CLI flags, import paths, metric names, prices, legal article numbers, and comparison tables of tools belong in a `reference_<topic>.md` file, not in the numbered files. The numbered file names the fact in one clause and points to the reference file. Test each table in a numbered file: does a first-time reader need every row to follow the section? If not, move it. A reference file has no glossary, no quick checks, and no teach-back. It is lookup, and it carries the source links.
 
 With a named goal, add sparse callouts: `> **Worth asking:** ...` — a real, answerable question grounded only in established facts. Add one only where a concept genuinely connects to the goal.
 
